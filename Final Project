@@ -4,117 +4,103 @@ import seaborn as sns
 
 suicide=pd.read_csv("master.csv") 
 suicide.drop('HDI for year', axis=1, inplace = True) #Drop missing data 
-suicide=suicide[(suicide['year']>=2000) & (suicide['year']<2016)] # not including 2016 because it has a lot missing data
-df1=suicide.sort_values(by='suicides/100k pop',ascending=False)
+suicide=suicide[(suicide['year']>=2000) & (suicide['year']<2016)]
 
+# not including 2016 because it has a lot of missing data
 # Plot to see trending of suicide 
-yearlyStats =df1.groupby('year').sum() 
-yearlyStats['suicides_no'].plot() 
+ax = plt.subplots(1,1,figsize=(10,8)) 
+ax = sns.lineplot(x="year", y="suicides_no", hue="age", data=suicide,ci=None)
 plt.title('Total No. of Suicides per Year: 2000 To 2015', fontsize = 22) 
-plt.ylabel('No. Suicides', fontsize = 20)
+plt.ylabel('No. Suicides in Thousand', fontsize = 20)
 plt.xlabel('Year', fontsize = 20)
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
 
 
-#Countries with the highest suicide rates 
-data_suicide_mean = df1['suicides/100k pop'].groupby(df1.country).mean().sort_values(ascending=False) 
-ax = plt.subplots(1,1,figsize=(15,4)) 
-ax = sns.barplot(data_suicide_mean.head(10).index,data_suicide_mean.head(10)) 
-plt.title('Top 10 countries with the highest suicide rates', fontsize = 22) 
-plt.ylabel('suicides/100k pop', fontsize = 20) 
-plt.xlabel('country', fontsize = 20)
-plt.show()
+# Happiness df merge with suicide df
+happiness=pd.read_csv("2015.csv").dropna()
+df2=happiness.sort_values(by='Happiness Score',ascending=False)
+#join combined and suicide tables
+new=df2.merge(suicide, left_on='Country', right_on='country')
 
-#create lists of countries per continent
-europe = ['Albania', 'Austria', 'Azerbaijan', 'Belarus', 'Belgium', 'Bosnia and Herzegovina', 'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic', 'Denmark', 'Estonia', 'Finland', 'France', 'Georgia', 'Germany', 'Greece', 'Hungary', 'Iceland', 'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Luxembourg', 'Malta', 'Montenegro', 'Netherlands', 'Norway', 'Poland', 'Portugal', 'Romania', 'Russian Federation', 'San Marino', 'Serbia', 'Slovakia', 'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Ukraine', 'United Kingdom']
-asia = ['Armenia', 'Bahrain', 'Israel', 'Japan', 'Kazakhstan', 'Kuwait', 'Kyrgyzstan', 'Macau', 'Maldives', 'Mongolia', 'Oman', 'Philippines', 'Qatar', 'Republic of Korea', 'Singapore', 'Sri Lanka', 'Thailand', 'Turkey', 'Turkmenistan', 'United Arab Emirates', 'Uzbekistan']
-northamerica = ['Antigua and Barbuda', 'Bahamas', 'Barbados', 'Belize', 'Canada', 'Costa Rica', 'Cuba', 'Dominica', 'El Salvador', 'Grenada', 'Guatemala', 'Jamaica', 'Mexico', 'Nicaragua', 'Panama', 'Puerto Rico', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and Grenadines', 'United States']
-southamerica =  ['Argentina', 'Aruba', 'Brazil', 'Chile', 'Colombia', 'Ecuador', 'Guyana', 'Paraguay', 'Suriname', 'Trinidad and Tobago', 'Uruguay']
-africa = ['Cabo Verde', 'Mauritius', 'Seychelles', 'South Africa'] 
-australiaoceania = ['Australia', 'Fiji', 'Kiribati', 'New Zealand']
-
-#move these to a dictionary of continents
-continents = {country: 'Asia' for country in asia}
-continents.update({country: 'Europe' for country in europe})
-continents.update({country: 'Africa' for country in africa})
-continents.update({country: 'North_America' for country in northamerica})
-continents.update({country: 'South_America' for country in southamerica})
-continents.update({country: 'Australia_Oceania' for country in australiaoceania})
-df1['Continent'] = df1['country'].map(continents)
 #find overall correlation 
-sns.heatmap(suicide.corr(method = 'pearson'),cmap='YlGnBu',annot=True)
-plt.show()
-
-# GDP is not a overall factor 
 #create dataframe of correlation for each Continent 
-index =  ['Europe','Africa','North_America','South_America','Australia_Oceania'] 
-col_names = ['correlation'] 
-df3=pd.DataFrame(index = index, columns = col_names)
+index = happiness["Region"].unique()
+col_names = ['suicide_GDP_correlation','suicide_happiness_correlation'] 
+df1=pd.DataFrame(index = index, columns = col_names)
 for i in index:    
-    df4 = df1[df1['Continent']==i]    
-    corr=df4['gdp_per_capita ($)'].corr(df4['suicides/100k pop'])    
-    df3['correlation'][i]=corr
+    df3 = new[new['Region']==i]    
+    corr=df3['gdp_per_capita ($)'].corr(df3['suicides/100k pop'])
+    corr1=df3['Happiness Score'].corr(df3['suicides/100k pop'])
+    df1['suicide_GDP_correlation'][i]=corr
+    df1['suicide_happiness_correlation'][i]=corr1
 
+    
 # plot correlation 
-df3.plot(kind='bar', fontsize=14)
-plt.title('Correlation BTW Suicides VS GDP', fontsize = 15) 
-ax.set_xlabel("Continent", fontsize=10) 
+df1.plot(kind='bar', fontsize=14)
+plt.title('Correlations', fontsize = 15) 
+ax.set_xlabel("Region", fontsize=10) 
 ax.set_ylabel("correlation", fontsize=10) 
 plt.show()
 
 
-
-happiness=pd.read_csv("2015.csv").dropna()
-df2=happiness.sort_values(by='Happiness Score',ascending=False)
-df2['Continent'] = df2['Country'].map(continents)
-
-# fir Linear Model for the happiness data
-from sklearn.linear_model import LinearRegression
-
-x=df2[['Economy (GDP per Capita)', 'Family','Freedom', 'Generosity','Health (Life Expectancy)', 'Trust (Government Corruption)']]
-x.rename(columns={'Economy (GDP per Capita)':'GDP','Health (Life Expectancy)':'Health','Trust (Government Corruption)':'Trust'},inplace=True)
-y=df2['Happiness Score']
-
-reg=LinearRegression().fit(x,y)
-plt.bar(x.columns,reg.coef_)
+ax1 = plt.subplots(1,1,figsize=(10,8)) 
+ax1 = sns.barplot(x="Region", y="suicides/100k pop", color="grey", data=new,ci=None)
+plt.title('Suicides Rate per Region', fontsize = 22) 
+plt.ylabel('Suicides Rate per 100K population', fontsize = 20)
+plt.xlabel('Region', fontsize = 20)
+plt.xticks(rotation=90)
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
 
-#Countries with the highest Happiness Score
-ax = plt.subplots(1,1,figsize=(15,4)) 
-ax = sns.barplot(df2['Country'].head(10),df2['Happiness Score'].head(10)) 
-plt.title('Top 10 countries with the highest Happiness Score', fontsize = 22) 
-plt.ylabel('Happiness Score', fontsize = 20) 
-plt.xlabel('Country', fontsize = 20)
-plt.show()
-# No overlapping
 
-#join combined and suicide tables
-new=df2.merge(df1, left_on='Country', right_on='country')
-newdf=new[['country','suicides/100k pop','Happiness Score']].copy()
-
-sns.heatmap(newdf.corr(method = 'pearson'),cmap='YlGnBu',annot=True)
-
-#JL: 
 # User gives country name-> generate the group with highest suicide rate in that country 
 #inputCountry = input("Please input the country name:")
-print("Step JL")
-inputCountry = "United States"
-dfSelect = new[new["country"] == inputCountry]
-dfSelectMax = dfSelect.nlargest(1, "suicides/100k pop").iloc[0]
-age = dfSelectMax["age"]
-gender = dfSelectMax["sex"]
-print("The group with highest suicide rate is: ", age, gender)
-
-# fir Linear Model for the happiness data
-dfSelect2 = df2[df2["Country"]==inputCountry]
-
-from sklearn.linear_model import LinearRegression
-
-x2=dfSelect2[['Economy (GDP per Capita)', 'Family','Freedom', 'Generosity','Health (Life Expectancy)', 'Trust (Government Corruption)']]
-#x=dfSelect2[['GDP', 'Family','Freedom', 'Generosity','Health', 'Trust']]
-x2.rename(columns={'Economy (GDP per Capita)':'GDP','Health (Life Expectancy)':'Health','Trust (Government Corruption)':'Trust'},inplace=True)
-y2=dfSelect2['Happiness Score']
-
-reg=LinearRegression().fit(x2,y2)
-plt.bar(x2.columns,reg.coef_)
-plt.show()
+try:
+    inputCountry = input('Please input the country name: ')
+    dfSelect = new[new["Country"] == inputCountry].sort_values(by='suicides/100k pop',ascending=False)
+    dfSelectMax=dfSelect.nlargest(1, "suicides/100k pop").iloc[0]
+    age = dfSelectMax["age"]
+    gender = dfSelectMax["sex"]  
+    print('In', inputCountry, ", the group with highest suicide rate is: ", age, gender)
+    recom= ''    
+    for i in new:    
+        df3 = new[new['Country']==inputCountry]    
+        corr=df3['gdp_per_capita ($)'].corr(df3['suicides/100k pop'])
+        corr1=df3['Happiness Score'].corr(df3['suicides/100k pop'])
+        if corr >corr1:
+            recom = 'We would recommend government focus on imrpoving economic'
+        elif corr == 'NaN' or corr1 =='NaN':
+            recom = 'Suicide data not reported, we would recommend government collect data for further analysis'
+        else:
+            recom = 'We would recommend government focus on imrpoving happiness'
+    print(recom)
+    
+    eco=new['Economy (GDP per Capita)'].mean()
+    family=new['Family'].mean()
+    health=new['Health (Life Expectancy)'].mean()
+    free=new['Freedom'].mean()
+    trust=new['Trust (Government Corruption)'].mean()
+    gen=new['Generosity'].mean()
+    dys=new['Dystopia Residual'].mean()
+    
+    impro=[]
+    if recom == 'We would recommend government focus on imrpoving happiness':
+        if eco>dfSelectMax['Economy (GDP per Capita)']:
+            impro.append('Economy (GDP per Capita)')
+        if family>dfSelectMax['Family']:
+            impro.append('Family')
+        if health>dfSelectMax['Health (Life Expectancy)']:
+            impro.append('Health (Life Expectancy)')
+        if free>dfSelectMax['Freedom']:
+            impro.append('Freedom')
+        if trust>dfSelectMax['Trust (Government Corruption)']:
+            impro.append('Trust (Government Corruption)')
+        if gen>dfSelectMax['Generosity']:
+            impro.append('Generosity')
+        if dys>dfSelectMax['Dystopia Residual']:
+            impro.append('Dystopia Residual')
+    for i in impro:
+        print('Happiness factor of', i, 'is below world average, could be improved ')
+except Exception:
+    print('Suicide data not reported, we would recommend government to collect data for futher analysis')
