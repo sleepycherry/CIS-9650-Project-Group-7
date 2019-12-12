@@ -3,11 +3,11 @@
 Group Project Created for CIS 9650- Programing for Analytics MNSA, Zicklin School of Business- Baruch College CUNY
 Group Member:Jiajun Kuang, Jiayuan Li, Yanmei Lin , Xuming Shi
 
-##Project Introduction
+## Project Introduction
 Globally, close to 800,000 people die from suicide every year. That’s one person every 40 seconds. Due to the stigma associated with suicide – and the fact that it is illegal in some countries – this figure is also likely to be an underestimate, with some suicides being classified as unintentional injuries. This makes it one of the leading causes of death globally. But this could be changed. To prevent suicide, interventions need to take place from the universal to the individual level. Before we get into invervention directly, we need to understand what are the causes of suicide. At the individual level, the causes could be depression, mental illness, the feeling of loneliness and hopelessness. What if bring it to a higher level? Could a country’s economic development, or the overall happiness in society be a factor of suicide as well? 
 
 
-##Problem Statement
+##P roblem Statement
 The objective of this project is to contribute to a high-level political direction for the government to prevent suicide. 
  
 ## Datasets Used
