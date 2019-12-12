@@ -21,6 +21,9 @@ The objective of this project is to contribute to a high-level political directi
 
 ## Analysis
 
-Full Analysis can be found in our presentation deck **[Global Suicide Prevention Presentaion](https://docs.google.com/presentation/d/1SOfNjbD-VjeEmjSbu2MU94sfK4toH-91d7NOLB8Mo2w/edit?usp=sharing)**
+Full Analysis can be found in our presentation deck via **[Global Suicide Prevention Presentaion](https://docs.google.com/presentation/d/1SOfNjbD-VjeEmjSbu2MU94sfK4toH-91d7NOLB8Mo2w/edit?usp=sharing)**
 
 ## Final Product
+
+If you would like to our final product, please download the source code **[Final Product](https://github.com/sleepycherry/CIS-9650-Project-Group-7/blob/master/Final%20Product)** and datasets. You can run it by following our user manual.
+
