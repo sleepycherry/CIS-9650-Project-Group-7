@@ -1,0 +1,69 @@
+#import libraries 
+import pandas as pd
+import matplotlib.pyplot as plt 
+import seaborn as sns
+
+# Read suicide overview data
+suicide=pd.read_csv("suicide overview.csv") 
+suicide.drop('HDI for year', axis=1, inplace = True) #Drop missing data 
+suicide=suicide[(suicide['year']>=2000) & (suicide['year']<2016)]
+# data used does not including 2016 because it has a lot of missing data
+
+# Read Happiness dataset and drop missing data. Merge it with suicide dataframe
+happiness=pd.read_csv("world happiness report 2015.csv").dropna()
+df2=happiness.sort_values(by='Happiness Score',ascending=False)
+#join combined and suicide tables
+new=df2.merge(suicide, left_on='Country', right_on='country')
+
+# User gives country name-> generate the group with highest suicide rate in that country 
+#inputCountry = input("Please input the country name:")
+
+# Show user the group(age and gender) with highest suicide rate, and our recommendation
+try:
+    inputCountry = input('Please input the country name: ')
+    dfSelect = new[new["Country"] == inputCountry].sort_values(by='suicides/100k pop',ascending=False)
+    dfSelectMax=dfSelect.nlargest(1, "suicides/100k pop").iloc[0]
+    age = dfSelectMax["age"]
+    gender = dfSelectMax["sex"]  
+    print('In', inputCountry, ", the group with highest suicide rate is: ", age, gender)
+    recom= ''    
+    for i in new:    
+        df3 = new[new['Country']==inputCountry]    
+        corr=df3['gdp_per_capita ($)'].corr(df3['suicides/100k pop'])
+        corr1=df3['Happiness Score'].corr(df3['suicides/100k pop'])
+        if corr >corr1:
+            recom = 'We would recommend government focus on imrpoving economic'
+        elif corr == 'NaN' or corr1 =='NaN':
+            recom = 'Suicide data not reported, we would recommend government collect data for further analysis'
+        else:
+            recom = 'We would recommend government focus on imrpoving happiness'
+    print(recom)
+    
+    eco=new['Economy (GDP per Capita)'].mean()
+    family=new['Family'].mean()
+    health=new['Health (Life Expectancy)'].mean()
+    free=new['Freedom'].mean()
+    trust=new['Trust (Government Corruption)'].mean()
+    gen=new['Generosity'].mean()
+    dys=new['Dystopia Residual'].mean()
+    
+    impro=[]
+    if recom == 'We would recommend government focus on imrpoving happiness':
+        if eco>dfSelectMax['Economy (GDP per Capita)']:
+            impro.append('Economy (GDP per Capita)')
+        if family>dfSelectMax['Family']:
+            impro.append('Family')
+        if health>dfSelectMax['Health (Life Expectancy)']:
+            impro.append('Health (Life Expectancy)')
+        if free>dfSelectMax['Freedom']:
+            impro.append('Freedom')
+        if trust>dfSelectMax['Trust (Government Corruption)']:
+            impro.append('Trust (Government Corruption)')
+        if gen>dfSelectMax['Generosity']:
+            impro.append('Generosity')
+        if dys>dfSelectMax['Dystopia Residual']:
+            impro.append('Dystopia Residual')
+    for i in impro:
+        print('Happiness factor of', i, 'is below world average, could be improved ')
+except Exception:
+    print('Suicide data not reported, we would recommend government to collect data for futher analysis')
