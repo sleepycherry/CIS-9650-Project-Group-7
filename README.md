@@ -27,3 +27,10 @@ Full Analysis can be found in our presentation deck via **[Global Suicide Preven
 
 If you would like to our final product, please download the source code **[Final Product](https://github.com/sleepycherry/CIS-9650-Project-Group-7/blob/master/Final%20Product)** and datasets. You can run it by following our user manual.
 
+By inputting a country name, we are able to get the gender and age group with the highest suicide rate using sort function, identify whether GDP or happiness is more correlated to the suicide using corrilation function, and among GDP, Family, Health (lift expectation), Freedom, Trust (government corruption), Generosity, Dystopia Residual, which factor of this country is below world average by comparing the max amount with the world average amount. Then the government will get the idea and might need to take actions to improve it.
+
+Below is the screenshot of the output using example country: United States
+
+
+
+
